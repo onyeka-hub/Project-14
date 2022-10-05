@@ -1964,5 +1964,3 @@ sudo systemctl restart php-fpm
 - Ansible Role for Wireshark:
 - https://github.com/ymajik/ansible-role-wireshark (Ubuntu)
 - https://github.com/wtanaka/ansible-role-wireshark (RedHat)
-
-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
