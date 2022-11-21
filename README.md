@@ -4,7 +4,7 @@
 
 **IMPORTANT NOTICE** – This project has some initial theoretical concepts that must be well understood before moving on to the practical part. Please read it carefully as many times as needed to completely digest the most important and fundamental DevOps concepts. To successfully implement this project, it is crucial to grasp the importance of the entire CI/CD process, roles of each tool and success metrics – so we encourage you to thoroughly study the following theory until you feel comfortable explaining all the concepts (e.g., to your new junior colleague or during a job interview).
 
-In previous projects, you have been deploying a tooling website directly into the MARKDOWN_HASH40d1b2d83998fabacb726e5bc3d22129MARKDOWNHASH directory on dev servers. Well, even though that worked fine, and we were able to access the website, it is not the best way to do it. Real world web application code is written on [Java](https://en.wikipedia.org/wiki/Java(programming_language)), .NET or other compiled programming languages require a build stage to create an executable file. The executable file (e.g., jar file in case of Java) contains all the codes embedded, and the necessary library dependencies, which the application needs to run and work successfully.
+In previous projects, you have been deploying a tooling website directly into the dev servers. Well, even though that worked fine, and we were able to access the website, it is not the best way to do it. Real world web application code is written on [Java](https://en.wikipedia.org/wiki/Java(programming_language)), .NET or other compiled programming languages require a build stage to create an executable file. The executable file (e.g., jar file in case of Java) contains all the codes embedded, and the necessary library dependencies, which the application needs to run and work successfully.
 
 Some other programs written languages such as PHP, JavaScript or Python work directly without being built into an executable file – these languages are called interpreted. That is why we could easily deploy the entire code from git into var/www/html and immediately the webserver was able to render the pages in a browser. However, it is not optimal to download code directly from Git onto our servers. There is a smarter way to package the entire application code, and track release versions. We can package the entire code and all its dependencies into an archive such as .tar.gz or .zip, so that it can be easily unpacked on a respective environment’s servers.
 
@@ -42,7 +42,7 @@ To emphasize a typical CI Pipeline further, let us explore the diagram below a l
 
 - **Deploy**: Once the tests are passed, the next phase is to deploy the compiled or packaged code into an artifact repository. This is where all the various versions of code including the latest will be stored. The CI tool will have to pick up the code from this location to proceed with the remaining parts of the pipeline.
 
-- **Auto Test**: Apart from Unit testing, there are many other kinds of tests that are required to analyse the quality of code and determine how vulnerable the software will be to external or internal attacks. These tests must be automated, and there can be multiple environments created to fulfil different test requirements. For example, a server dedicated for Integration Testing will have the code deployed there to conduct integration tests. Once that passes, there can be other sub-layers in the testing phase in which the code will be deployed to, so as to conduct further tests. Such are **User Acceptance Testing (UAT)**, and another can be **Penetration Testing**. These servers will be named according to what they have been designed to do in those environments. A **UAT** server is generally be used for **UAT**, **SIT** server is for **Systems Integration Testing**, **PEN** Server is for **Penetration Testing** and they can be named whatever the naming style or convention in which the team is used. An environment does not necessarily have to reside on one single server. In most cases it might be a stack as you have defined in your Ansible Inventory. All the servers in the *inventory/dev* are considered as Dev Environment. The same goes for*inventory/stage* (Staging Environment), *inventory/preprod* (Pre-production environment), *inventory/prod* (Production environment), etc. So, it is all down to naming convention as agreed and used company or team wide.
+- **Auto Test**: Apart from Unit testing, there are many other kinds of tests that are required to analyse the quality of code and determine how vulnerable the software will be to external or internal attacks. These tests must be automated, and there can be multiple environments created to fulfil different test requirements. For example, a server dedicated for Integration Testing will have the code deployed there to conduct integration tests. Once that passes, there can be other sub-layers in the testing phase in which the code will be deployed to, so as to conduct further tests. Such are **User Acceptance Testing (UAT)**, and another can be **Penetration Testing**. These servers will be named according to what they have been designed to do in those environments. A **UAT** server is generally be used for **UAT**, **SIT** server is for **Systems Integration Testing**, **PEN** Server is for **Penetration Testing** and they can be named whatever the naming style or convention in which the team is used. An environment does not necessarily have to reside on one single server. In most cases it might be a stack as you have defined in your Ansible Inventory. All the servers in the *inventory/dev* are considered as Dev Environment. The same goes for *inventory/stage* (Staging Environment), *inventory/preprod* (Pre-production environment), *inventory/prod* (Production environment), etc. So, it is all down to naming convention as agreed and used company or team wide.
 
 - **Deploy to production**: Once all the tests have been conducted and either the release manager or whoever has the authority to authorize the release to the production server is happy, he gives green light to hit the deploy button to ship the release to production environment. This is an Ideal Continuous Delivery Pipeline. If the entire pipeline was automated and no human is required to manually give the Go decision, then this would be considered as Continuous Deployment. Because the cycle will be repeated, and every time there is a code commit and push, it causes the pipeline to trigger, and the loop continues over and over again.
 
@@ -156,7 +156,7 @@ You should have a subdomains list like this:
 ![subdomain list](./images/dns2.PNG)
 
 ### Ansible Inventory should look like this
-
+```
 ├── ci
 ├── dev
 ├── pentest
@@ -164,6 +164,7 @@ You should have a subdomains list like this:
 ├── prod
 ├── sit
 └── uat
+```
 
 ### ci inventory file
 
@@ -1253,16 +1254,6 @@ Goto the **SET ME UP** section at the right hand corner to generate the password
 - Add, commit and push your changes made in the 'ansible-config-14' directory to the github and remember that the changes should be made first at the **feature/jenkinspipeline-stages** branch, built on this branch first for testing and merged to the main branch waiting to be called up by the **php-todo** job because the 'Jenkins file' in the **php-todo** directory will be calling the **main** branch of the **ansible-config-14** directory. So that when **php-todo** job is calling it from 'ansible-config-14/main', it will run on the **dev** environment.
 
 - The **php-todo** contains our code for our application. It also contains a jenkinsfile that zips the code, uploads it the an artifactory server then calls the **ansible-config-14** job which contains the actual ansible configuration that will pull down the code stored on artifactory and deploys to the dev environment.
-
-## Blockers
-
-![unsuccessful running of the php-todo jenkinsfile](./images/deploynment-branch.PNG)
-
-This was corrected by putting the correct dir ' ansible-config-proj-14/main '
-
-![unsuccessful running of the php-todo jenkinsfile](./images/deploynment-main.PNG)
-
-This was corrected by putting the correct URL of the artifactory PBL/php-todo into the **deployment.yml** file. 
 
 ![successful running of the php-todo jenkinsfile](./images/php-todo-success.PNG)
 
