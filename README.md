@@ -1734,7 +1734,7 @@ Now, when SonarQube is up and running, it is time to setup our Quality gate in J
 
   Sonarqube URL "http://server_IP:9000/sonar/ "
 
-![configure sonsrqube in jenkins](./images/configure-sonarqube-in-jenkins.PNG)
+![configure sonarqube in jenkins](./images/configure-sonarqube-in-jenkins.PNG)
 
 - Generate authentication token in SonarQube
 
@@ -1805,7 +1805,7 @@ sonar.php.tests.reportPath=build/logs/junit.xml
 
 **HINT**: To know what exactly to put inside the sonar-scanner.properties file, SonarQube has a configurations page where you can get some directions.
 
-A brief explanation of what is going on the the stage – set the environment variable for the **scannerHome** use the same name used when you configured SonarQube Scanner from **Jenkins Global Tool Configuration**. If you remember, the name was **SonarQubeScanner**. Then, within the steps use shell to run the scanner from bin directory.
+A brief explanation of what is going on the stage – set the environment variable for the **scannerHome** use the same name used when you configured SonarQube Scanner from **Jenkins Global Tool Configuration**. If you remember, the name was **SonarQubeScanner**. Then, within the steps use shell to run the scanner from bin directory.
 
 To further examine the configuration of the scanner tool on the Jenkins server – navigate into the **tools** directory
 
