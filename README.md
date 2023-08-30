@@ -250,12 +250,19 @@ In previous projects, you have been launching Ansible commands manually from a C
 
 To do this,
 
-1. Spin up your jenkins-ansible server
+1. Spin up your jenkins-ansible server (REDHAT)
   - Install git
   - clone down ansible-config-mgt repo if its a new jenkins-ansible server and this repo for guildline https://github.com/onyeka-hub/ansible-code-for-project-14.git
+  - If it is a new jenkins-ansible server install ansible with the below command
+    ```
+    sudo dnf install -y ansible-core
+    ```
   - using the guildline from above install jenkins and fire it up
   - Install the following on the jenkins-ansible server
-    - yum install python3 python3-pip wget unzip git -y
+      ```
+      sudo yum install python3 python3-pip wget unzip git -y
+      ```
+      
       ```
       python3 -m pip install --upgrade setuptools
       python3 -m pip install --upgrade pip
@@ -263,6 +270,7 @@ To do this,
       python3 -m pip install mysql-connector-python
       python3 -m pip install psycopg2==2.7.5 --ignore-installed
       ansible-galaxy collection install community.postgresql
+      ansible-galaxy collection install community.mysql
       ```
   - For other dependencies see the dependencies.md file
 
@@ -544,7 +552,7 @@ pipeline {
 
 1. Ensure that the git module in **Jenkinsfile** is checking out SCM to **main** branch instead of **master** (GitHub has discontinued the use of Master due to Black Lives Matter. You can read more here)
 
-2. Jenkins needs to export the **ANSIBLE_CONFIG** environment variable. You can put the **.ansible.cfg** file alongside Jenkinsfile in the **deploy** directory. This way, anyone can easily identify that everything in there relates to deployment. Then, using the Pipeline Syntax tool in Ansible, generate the syntax to create environment variables to set.
+2. Jenkins needs to export the **ANSIBLE_CONFIG** environment variable. You can put the **ansible.cfg** file alongside Jenkinsfile in the **deploy** directory. This way, anyone can easily identify that everything in there relates to deployment. Then, using the Pipeline Syntax tool in Ansible, generate the syntax to create environment variables to set.
 
 Inside the **deploy** directory, create a new file **ansible.cfg** inside the directory.
 
@@ -572,7 +580,7 @@ Try to run the ansible for dev from the branch first before running from the mai
 
 ### Possible issues to watch out for when you implement this
 
-1. Remember that **ansible.cfg** must be exported to environment variable so that Ansible knows where to find **Roles.** But because you will possibly run Jenkins from different git branches, the location of Ansible roles will change. Therefore, you must handle this dynamically. You can use Linux Stream Editor sed to update the section roles_path each time there is an execution. You may not have this issue if you run only from the main branch.
+1. Remember that **ansible.cfg** must be exported to environment variable so that Ansible knows where to find **Roles.** But because you will possibly run Jenkins from different git branches, the location of Ansible roles will change. Therefore, you must handle this dynamically. You can use Linux Stream Editor **"sed"** to update the section roles_path each time there is an execution. You may not have this issue if you run only from the main branch.
 
 2. If you push new changes to Git so that Jenkins failure can be fixed. You might observe that your change may sometimes have no effect. Even though your change is the actual fix required. This can be because Jenkins did not download the latest code from GitHub. Ensure that you start the Jenkinsfile with a clean up step to always delete the previous workspace before running a new one. Sometimes you might need to login to the Jenkins Linux server to verify the files in the workspace to confirm that what you are actually expecting is there. Otherwise, you can spend hours trying to figure out why Jenkins is still failing, when you have pushed up possible changes to fix the error.
 
@@ -599,7 +607,7 @@ Well, unfortunately, we will not be doing any of the highlighted options. What w
 To deploy to other environments, we will need to use parameters.
 
 1. Update sit inventory with new servers
-
+```
 [tooling]
 <SIT-Tooling-Web-Server-Private-IP-Address>
 
@@ -611,10 +619,12 @@ To deploy to other environments, we will need to use parameters.
 
 [db:vars]
 ansible_user=ec2-user
+
 ansible_python_interpreter=/usr/bin/python
 
 [db]
 <SIT-DB-Server-Private-IP-Address>
+```
 
 2. Update Jenkinsfile to introduce parameterization. Below is just one parameter. It has a default value in case if no value is specified at execution. It also has a description so that everyone is aware of its purpose.
 
@@ -707,7 +717,7 @@ Our goal here is to deploy the application onto servers directly from **Artifact
 1. Fork the repository below into your GitHub account
 https://github.com/darey-devops/php-todo.git
 
-2. On you Jenkins server, install PHP, its dependencies and **Composer tool** (Feel free to do this manually at first, then update your Ansible accordingly later)
+2. On your Jenkins server, install PHP, its dependencies and **Composer tool** (Feel free to do this manually at first, then update your Ansible accordingly later)
 
 ```
 For ubuntu:
@@ -732,12 +742,10 @@ Install composer
 ```
 
 3. Install Jenkins plugins
-  1. Plot plugin
-  2. Artifactory plugin
 
-- We will use plot plugin to display tests reports, and code coverage information.
+- Plot plugin: We will use plot plugin to display tests reports, and code coverage information.
 
-- The Artifactory plugin will be used to easily upload code artifacts into an Artifactory server.
+- Artifactory plugin: The Artifactory plugin will be used to easily upload code artifacts into an Artifactory server.
 
 Provision an instance with a minimum of 4G RAM for Artifactory server and use the URL to configure Jenkins
 
@@ -823,7 +831,7 @@ mysql_users:
 
 ![homestead database and user](./images/db-and-user.PNG)
 
-3. Update the database connectivity requirements in the file **.env.sample**
+3. Update the database connectivity requirements in the file **.env.sample** in the php-todo repo
 
 4. Update **Jenkinsfile** with proper pipeline configuration
 
@@ -1932,7 +1940,7 @@ sudo apt install xdebug
 
 ![quality-gate-pipeline-stop](./images/quality-gate-pipeline-stop.PNG)
 
-f everything goes well, you should be able to see that the SonarQube Quality Gate will not allow the code to be sent to artifactory will not allow the other job to build.
+If everything goes well, you should be able to see that the SonarQube Quality Gate will not allow the code to be sent to artifactory and will not allow the other job to build.
 
 Notice that with the current state of the code, it cannot be deployed to Integration environments due to its quality. In the real world, DevOps engineers will push this back to developers to work on the code further, based on SonarQube quality report. Once everything is good with code quality, the pipeline will pass and proceed with sipping the codes further to a higher environment.
 
