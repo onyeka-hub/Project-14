@@ -97,19 +97,19 @@ sonar.jdbc.password=sonar
 #sonar.web.javaOpts=-Xmx512m -Xms128m -XX:+HeapDumpOnOutOfMemoryError
 
 # Same as previous property, but allows to not repeat all other settings like -Xmx
-sonar.web.javaAdditionalOpts=-server
+#sonar.web.javaAdditionalOpts=-server
 
 # Binding IP address. For servers with more than one IP address, this property specifies which
 # address will be used for listening on the specified ports.
 # By default, ports will be used on all IP addresses associated with the server.
-snar.web.host=0.0.0.0
+#snar.web.host=0.0.0.0
 
 # Web context. When set, it must start with forward slash (for example /sonarqube).
 # The default value is root context (empty value).
 
-sonar.web.context= /sonar
+#sonar.web.context= /sonar
 # TCP port for incoming HTTP connections. Default value is 9000.
-sonar.web.port=9000
+#sonar.web.port=9000
 
 
 # The maximum number of connections that the server will accept and process at any given time.
@@ -422,7 +422,3 @@ sonar.web.port=9000
 
 # Elasticsearch HTTP connector
 #sonar.search.httpPort=-1
-
-
-
-

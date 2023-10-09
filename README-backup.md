@@ -248,65 +248,19 @@ Watch a short description here https://youtu.be/upJS4R6SbgM Focus more on the fi
 
 In previous projects, you have been launching Ansible commands manually from a CLI. Now, with Jenkins, we will start running Ansible from Jenkins UI.
 
+# Please use Ubuntu 20.04 for this project because redhat 9 will have only php 8.0 instaed of php 7.4 that will conflict with the dependencies for php-todo configuration.  
+
 To do this,
 
-1. Spin up your jenkins-ansible server (Ubuntu 20.04)
-
-- Install jenkins with the below script. See the **dependencies.md** for guildline on installation of jenkins on ubuntu 20.04.
-
-```
-#!/bin/bash
-
-# jenkins installation script
-
-# update the server repository
-sudo apt update -y
-
-# This is the Debian package repository of Jenkins to automate installation and upgrade. To use this repository, first add the key to your system:
-
-
-curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | sudo tee \
-    /usr/share/keyrings/jenkins-keyring.asc > /dev/null
-
-# Then add a Jenkins apt repository entry:
-
-echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
-    https://pkg.jenkins.io/debian-stable binary/ | sudo tee \
-    /etc/apt/sources.list.d/jenkins.list > /dev/null
-
-# Update your local package index, then finally install Jenkins:
-
-sudo apt-get update -y
-sudo apt-get install fontconfig openjdk-11-jre -y
-sudo apt-get install jenkins -y
-
-echo "Jenkins installation successfull"
-
-# Unlock Jenkins
-sudo cat /var/lib/jenkins/secrets/initialAdminPassword
-```
-
+1. Spin up your jenkins-ansible server (REDHAT)
+- Install jenkins. See the **dependencies.md** for guildline on installation of jenkins on redhat.
 - If it is a new jenkins-ansible server install ansible and others with the below commands
-```
-sudo add-apt-repository ppa:ondrej/php
-sudo apt update
-sudo apt install -y php7.4
-sudo apt install -y php7.4-common php7.4-mbstring php7.4-opcache php7.4-intl php7.4-xml php7.4-gd php7.4-curl php7.4-mysql php7.4-fpm php7.4-json
-sudo systemctl start php7.4-fpm
-sudo systemctl enable php7.4-fpm
-```
-
-For installing ansible
-```
-sudo apt update
-sudo apt install software-properties-common
-sudo add-apt-repository --yes --update ppa:ansible/ansible
-sudo apt install ansible
-```
-
 - Install the following on the jenkins-ansible server
 ```
-sudo apt get install python3-pip unzip -y
+sudo yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+sudo yum install -y dnf-utils http://rpms.remirepo.net/enterprise/remi-release-8.rpm
+sudo dnf install -y ansible-core
+sudo yum install python3 python3-pip wget unzip git -y
 python3 -m pip install --upgrade setuptools
 python3 -m pip install --upgrade pip
 python3 -m pip install PyMySQL
@@ -315,7 +269,6 @@ python3 -m pip install psycopg2-binary
 ansible-galaxy collection install community.postgresql
 ansible-galaxy collection install community.mysql
 ```
-
 - For other dependencies see the dependencies.md file
 
 - clone down ansible-config-mgt repo if its a new jenkins-ansible server and this repo for guildline https://github.com/onyeka-hub/ansible-code-for-project-14.git
@@ -538,13 +491,23 @@ pipeline {
 
 Now that you have a broad overview of a typical Jenkins pipeline. Let us get the actual Ansible deployment to work by:
 
-1. Installing Ansible on Jenkins. Install the following dependencies if not yet installed.
+1. Installing Ansible on Jenkins. Install the following dependencies
+```
+sudo yum install ansible -y
+python3 -m pip install --upgrade setuptools
+python3 -m pip install --upgrade pip
+python3 -m pip install PyMySQL
+python3 -m pip install mysql-connector-python
+python3 -m pip install psycopg2-binary
+ansible-galaxy collection install community.postgresql
+ansible-galaxy collection install community.mysql
+```
 
 2. Installing Ansible plugin in Jenkins UI
 
 3. Creating Jenkinsfile from scratch. (Delete or backup all you currently have in there at dependencies.md file and start all over to get Ansible to run successfully)
 
-- Note that jenkins will be running the ansible commands. Before now, it is ansible that ssh into the target machines but now it is the jenkins that will do that, so you ned to give jenkins the private key to enable it to connet to the target machines. Create an ssh credentials for jenkins to use to ssh into the target machines. Go to **Dashboard - Manage Jenkins - Credentials - Global credentials (unrestricted) - Add credentials**. Choose ssh username with private keys, ID = private-key(any name), Description = jenkins-ansible-connection(any name), username = ubuntu (the username of the machine where jenkins is installed), copy the private key
+- Note that jenkins will be running the ansible commands. Before now, it is ansible that ssh into the target machines but now it is the jenkins that will do that, so you ned to give jenkins the private key to enable it to connet to the target machines. Create an ssh credentials for jenkins to use to ssh into the target machines. Go to **Dashboard - Manage Jenkins - Credentials - Global credentials (unrestricted) - Add credentials**. Choose ssh username with private keys, ID = private-keys(any name), Description = jenkins ansible connection(any name), username = ec2-user(the username of the machine where jenkins is installed), copy the private key
 
 - Configure ansible in jenkins. Go to Dashboard - Manage Jenkins - Tools. Locate ansible, choose any name(ansible), path to ansible = /usr/bin/ Save the page.
 
@@ -590,13 +553,8 @@ The jenkinsfile should look like this
 pipeline {
   agent any
 
-  # environment {
-  #     ANSIBLE_CONFIG="${WORKSPACE}/deploy/ansible.cfg"
-  #   }
-
-
   environment {
-      ANSIBLE_CONFIG="/home/ubuntu/ansible-config-mgt-redo/deploy/ansible.cfg"
+      ANSIBLE_CONFIG="${WORKSPACE}/deploy/ansible.cfg"
     }
 
   stages {
@@ -614,12 +572,12 @@ pipeline {
          }
        }
 
-      #  stage('Prepare Ansible For Execution') {
-      #    steps {
-      #      sh 'echo ${WORKSPACE}' 
-      #      sh 'sed -i "3 a roles_path=${WORKSPACE}/roles" ${WORKSPACE}/deploy/ansible.cfg'  
-      #    }
-      #  }
+      stage('Prepare Ansible For Execution') {
+        steps {
+          sh 'echo ${WORKSPACE}' 
+          sh 'sed -i "3 a roles_path=${WORKSPACE}/roles" ${WORKSPACE}/deploy/ansible.cfg'  
+        }
+     }
 
       stage('Run Ansible playbook') {
         steps {
@@ -633,7 +591,8 @@ pipeline {
         }
       }
     }
-  }
+
+}
 ```
 
 ### Possible errors to watch out for:
@@ -649,7 +608,6 @@ Paste the code snippet below in to ansible.cfg.
 
 ```yaml
 [defaults]
-roles_path = /home/ubuntu/ansible-config-mgt-redo/roles
 timeout = 160
 callbacks_enabled = profile_tasks
 log_path=~/ansible.log
@@ -742,12 +700,8 @@ The jenkinsfile should look like this
 pipeline {
   agent any
 
-  # environment {
-  #     ANSIBLE_CONFIG="${WORKSPACE}/deploy/ansible.cfg"
-  #   }
-
   environment {
-      ANSIBLE_CONFIG="/home/ubuntu/ansible-config-mgt-redo/deploy/ansible.cfg"
+      ANSIBLE_CONFIG="${WORKSPACE}/deploy/ansible.cfg"
     }
 
   parameters {
@@ -769,12 +723,12 @@ pipeline {
          }
        }
 
-    #   stage('Prepare Ansible For Execution') {
-    #     steps {
-    #       sh 'echo ${WORKSPACE}' 
-    #       sh 'sed -i "3 a roles_path=${WORKSPACE}/roles" ${WORKSPACE}/deploy/ansible.cfg'  
-    #     }
-    #  }
+      stage('Prepare Ansible For Execution') {
+        steps {
+          sh 'echo ${WORKSPACE}' 
+          sh 'sed -i "3 a roles_path=${WORKSPACE}/roles" ${WORKSPACE}/deploy/ansible.cfg'  
+        }
+     }
 
       stage('Run Ansible playbook') {
         steps {
@@ -873,11 +827,10 @@ Go to Jenkins and build with **ci.yml** parameter
 
 - Connect to the artifactory web page, update the password = Onyeka12345. Create a generic repository with Repository key = PBL
 
-4. In Jenkins UI configure Artifactory. Go to **manage jenkins**, **system**.
-
-Then Configure the server ID = artifactory-server, URL(http://artifactory-ip:8081/) and Credentials, and run Test Connection. 
+4. In Jenkins UI configure Artifactory. Go to **manage jenkins**, **system**
+. Then Configure the server ID = artifactory-server, URL(http://artifactory-ip:8081/) and Credentials, and run Test Connection. 
   - username: admin
-  - password: <artifactory-password>(Onyeka12345)
+  - password: <artifactory-password>
 
 ![configuring artifactory on jenkins](./images/jenkins-artifactory-configure.PNG)
 
@@ -1025,6 +978,84 @@ Run the jenkins job again
 
 ![successful](./images/prepare-dep-success.PNG)
 
+## New blocker
+
+![composer error](./images/composer-error.PNG)
+
+This is showing dependensies compartibility error, the latest php 8.0 running on redhat 9 having which is where jenkins is running is no more compartible with the dependencies in the composer.json and composer.lock files.
+
+So I had to switch over to ubuntu 20.04 for my jenkins and start all over again. Consult the dependencies.md for setting up jenkins and ansible.
+
+1. Clone the ansible-config-mgt folder which will be up to date with the jenkinsfile as shown below and run the ansible configuration.
+
+```yaml
+pipeline {
+  agent any
+
+  environment {
+      ANSIBLE_CONFIG="/home/ubuntu/ansible-config-mgt-redo/deploy/ansible.cfg"
+    }
+
+  parameters {
+      string(name: 'inventory', defaultValue: 'dev.yml',  description: 'This is the inventory file for the environment to deploy configuration')
+    }
+
+  stages {
+      stage("Initial cleanup") {
+          steps {
+            dir("${WORKSPACE}") {
+              deleteDir()
+            }
+          }
+        }
+
+       stage('Checkout SCM') {
+         steps{
+           checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'private-key', url: 'https://github.com/onyeka-hub/ansible-config-mgt-redo.git']])
+         }
+       }
+
+      stage('Run Ansible playbook') {
+        steps {
+           ansiblePlaybook become: true, colorized: true, credentialsId: 'private-key', disableHostKeyChecking: true, installation: 'ansible', inventory: 'inventory/${inventory}', playbook: 'playbooks/site.yml'
+         }
+      }
+
+      stage('Clean Workspace after build'){
+        steps{
+          cleanWs(cleanWhenAborted: true, cleanWhenFailure: true, cleanWhenNotBuilt: true, cleanWhenUnstable: true, deleteDirs: true)
+        }
+      }
+    }
+  }
+```
+2. Update the deploy/ansible.cfg file with roles path as seen below
+```yaml
+[defaults]
+roles_path = /home/ubuntu/ansible-config-mgt-redo/roles
+timeout = 160
+callbacks_enabled = profile_tasks
+log_path=~/ansible.log
+host_key_checking = False
+gathering = smart
+ansible_python_interpreter=/usr/bin/python3
+allow_world_readable_tmpfiles=true
+
+
+[ssh_connection]
+ssh_args = -o ControlMaster=auto -o ControlPersist=30m -o ControlPath=/tmp/ansible-ssh-%h-%p-%r -o ServerAliveInterval=60 -o ServerAliveCountMax=60 -o ForwardAgent=yes
+```
+
+2. Installing Ansible plugin in Jenkins UI
+
+- Note that jenkins will be running the ansible commands. Before now, it is ansible that ssh into the target machines but now it is the jenkins that will do that, so you need to give jenkins the private key to enable it to connet to the target machines. Create an ssh credentials for jenkins to use to ssh into the target machines. Go to **Dashboard - Manage Jenkins - Credentials - Global credentials (unrestricted) - Add credentials**. Choose ssh username with private keys, ID = private-key(any name), Description = jenkins-ansible-connection(any name), username = ubuntu(the username of the machine where jenkins is installed), copy the private key
+
+3. Configure ansible in jenkins. Go to Dashboard - Manage Jenkins - Tools. Locate ansible, choose any name(ansible), path to ansible = /usr/bin/ Save the page.
+
+![ansible configuration](./images/ansible-configuration.PNG)
+
+4. Go through from Phase 1 – Prepare Jenkins to update your jenkins server with the php-todo directory.
+
 1. Update the Jenkinsfile to include Unit tests step
 
 ```yaml
@@ -1091,8 +1122,16 @@ phploc command not found
 
 ### Solution
 
-Install phpunit and phploc with the following commands
+Install phploc with the following commands
 
+```
+sudo dnf --enablerepo=remi install php-phpunit-phploc
+wget -O phpunit https://phar.phpunit.de/phpunit-7.phar
+chmod +x phpunit
+```
+
+### Ubuntu Solution
+Install phpunit and phploc with the following commands
 ```
 # for downloading PHPUnit 7 PHAR on Ubuntu:
 wget -O phpunit https://phar.phpunit.de/phpunit-7.phar
@@ -1119,7 +1158,7 @@ First you need to make sure that zip is installed on the jenkins server and if y
 
 Run the below command on the jenkins server
 
-`sudo yum install zip -y`
+  `sudo yum install zip -y`
 
 Update the jenkinsfile with the code below
 
@@ -1259,7 +1298,7 @@ pipeline {
 
     stage ('Deploy to Dev Environment') {
       steps {
-        build job: 'ansible-config-mgt-redo/main', parameters: [[$class: 'StringParameterValue', name: 'env', value: 'dev.yml']], propagate: false, wait: true
+        build job: 'ansible-config-proj-14/main', parameters: [[$class: 'StringParameterValue', name: 'env', value: 'dev.yml']], propagate: false, wait: true
       }
     }
   }
@@ -1787,13 +1826,31 @@ sudo systemctl status sonar
 - name: sonar assignment
   import_playbook: ../static-assignments/sonar.yml
 ```
-
-- Update the roles with the sonarqube role.
-
 - Add, commit and push your changes
 
 - Run the **ansible-config-proj-14** jenkinsfile against the CI environment
 
+![ couldn't resolve module/action 'community.postgresql.postgresql_db'](./images/sonarqube-blocker.PNG)
+
+## Solution
+
+- Update the deploy/ansible.cfg with the roles path below and remember to remove it after the installation of sonarquibe
+```
+roles_path = /home/ubuntu/ansible-config-proj-14/roles
+```
+- On the ansible-config-proj-14 terminal run the command below
+```
+export ANSIBLE_CONFIG=/home/ubuntu/ansible-config-proj-14/deploy/ansible.cfg
+
+```
+where/home/ubuntu/ansible-config-proj-14/deploy/ansible.cfg is the path for "ansible.cfg"
+
+- Make sure that the jenkins server can talk to the sonarqube server via ssh agent
+
+- Run the ansible playbook locally on the terminal with the command below
+```
+ansible-playbook -i inventory/ci.yml playbooks/site.yml
+```
 ![successfull installation of sonarqube](./images/sonarqube-installation.PNG)
 
 ### Access SonarQube
@@ -1803,7 +1860,7 @@ To access SonarQube using browser, type server’s IP address followed by port 9
 http://server_IP:9000/sonar OR http://localhost:9000/sonar
 ```
 
-Login to SonarQube with default administrator username = admin and password = admin
+Login to SonarQube with default administrator username and password – **admin**
 
 Now, when SonarQube is up and running, it is time to setup our Quality gate in Jenkins.
 
@@ -1813,35 +1870,29 @@ Now, when SonarQube is up and running, it is time to setup our Quality gate in J
 
 - Navigate to configure system in Jenkins. Add SonarQube server as shown below:
 
-  **Manage Jenkins > System**
+  **Manage Jenkins > Configure System**
 
   Sonarqube URL "http://server_IP:9000/sonar/ "
 
 ![configure sonarqube in jenkins](./images/configure-sonarqube-in-jenkins.PNG)
 
-- Generate authentication token in SonarQube. Go to the top right hand corner
+- Generate authentication token in SonarQube
 
- ** A > My Account > Security > Generate Tokens**
+ **User > My Account > Security > Generate Tokens**
 
 ![sonarqube token](./images/sonarqube-token.PNG)
 
-![sonarqube token](./images/sonarqube-token2.PNG)
-
-name : jenkins-token (383da3120df389e963adc26d4106f28ac6385d2b)
-
 - Configure Quality Gate Jenkins Webhook in SonarQube – The URL should point to your Jenkins server
   
-`http://{JENKINS_HOST}/sonarqube-webhook/`
+  ' http://{JENKINS_HOST}/sonarqube-webhook/'
 
   **Administration > Configuration > Webhooks > Create**
 
 ![sonarqube webhook](./images/sonarqube-jenkins-webhook.PNG)
 
-![sonarqube webhook](./images/sonarqube-jenkins-webhook2.PNG)
-
 - Setup SonarQube scanner from Jenkins – Global Tool Configuration
 
-  **Manage Jenkins > Tools**
+  **Manage Jenkins > Global Tool Configuration**
 
 ![configure sonarqube in jenkins](./images/configure-sonarqube-in-jenkins.PNG)
 
@@ -1850,16 +1901,17 @@ name : jenkins-token (383da3120df389e963adc26d4106f28ac6385d2b)
 Below is the snippet for a **Quality Gate** stage in **Jenkinsfile**. Add this to the php-todo/Jenkinsfile below the "stage('Plot Code Coverage Report')". This is because it needs to check the quality of the code before allowing it to be passed.
 
 ```
-stage('SonarQube Quality Gate') {
-    environment {
-        scannerHome = tool 'SonarQubeScanner'
-    }
-    steps {
-        withSonarQubeEnv('sonarqube') {
-           sh "${scannerHome}/bin/sonar-scanner"
+    stage('SonarQube Quality Gate') {
+        environment {
+            scannerHome = tool 'SonarQubeScanner'
         }
-      }
-}
+        steps {
+            withSonarQubeEnv('sonarqube') {
+                sh "${scannerHome}/bin/sonar-scanner"
+            }
+
+        }
+    }
 ```
 - Add, commit and push your changes
 
@@ -2001,6 +2053,37 @@ The complete stage will now look like this:
 ```
 
 To test, create different branches and push to GitHub. You will realise that only branches other than **develop, hotfix, release, main, or master** will be able to deploy the code.
+
+## Blockers
+
+![abesnce of node.js](./images/failure-due-to-absence-of-nodejs.PNG)
+
+- Install node.js with the command below
+
+```
+sudo apt install npm
+```
+- Check and Install **xdebug** with the following commands
+
+```
+php --ini | grep xdebug
+sudo apt install xdebug
+```
+
+![quality-gate-pipeline-stop](./images/quality-gate-pipeline-stop.PNG)
+
+If everything goes well, you should be able to see that the SonarQube Quality Gate will not allow the code to be sent to artifactory and will not allow the other job to build.
+
+Notice that with the current state of the code, it cannot be deployed to Integration environments due to its quality. In the real world, DevOps engineers will push this back to developers to work on the code further, based on SonarQube quality report. Once everything is good with code quality, the pipeline will pass and proceed with sipping the codes further to a higher environment.
+
+### Troubleshooting
+
+```
+sudo yum install npm -y
+sudo yum install npm -y | grep xdebug
+sudo yum install php-xdebug
+sudo systemctl restart php-fpm
+```
 
 ### Complete the following tasks to finish Project 14
 
