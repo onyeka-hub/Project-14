@@ -253,22 +253,25 @@ In previous projects, you have been launching Ansible commands manually from a C
 To do this,
 
 1. Spin up your jenkins-ansible server (REDHAT)
-- Install jenkins. See the **dependencies.md** for guildline on installation of jenkins on redhat.
+
 - If it is a new jenkins-ansible server install ansible and others with the below commands
-- Install the following on the jenkins-ansible server
+
 ```
 sudo yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
 sudo yum install -y dnf-utils http://rpms.remirepo.net/enterprise/remi-release-8.rpm
 sudo dnf install -y ansible-core
 sudo yum install python3 python3-pip wget unzip git -y
-python3 -m pip install --upgrade setuptools
-python3 -m pip install --upgrade pip
-python3 -m pip install PyMySQL
+sudo python3 -m pip install --upgrade setuptools
+sudo python3 -m pip install --upgrade pip
+sudo python3 -m pip install PyMySQL
 python3 -m pip install mysql-connector-python
 python3 -m pip install psycopg2-binary
 ansible-galaxy collection install community.postgresql
 ansible-galaxy collection install community.mysql
 ```
+
+- Install jenkins. See the **dependencies.md** for guildline on installation of jenkins on redhat.
+
 - For other dependencies see the dependencies.md file
 
 - clone down ansible-config-mgt repo if its a new jenkins-ansible server and this repo for guildline https://github.com/onyeka-hub/ansible-code-for-project-14.git
@@ -491,7 +494,7 @@ pipeline {
 
 Now that you have a broad overview of a typical Jenkins pipeline. Let us get the actual Ansible deployment to work by:
 
-1. Installing Ansible on Jenkins. Install the following dependencies
+1. Installing Ansible on Jenkins. Install the following dependencies if not yet installed:
 ```
 sudo yum install ansible -y
 python3 -m pip install --upgrade setuptools
@@ -507,7 +510,7 @@ ansible-galaxy collection install community.mysql
 
 3. Creating Jenkinsfile from scratch. (Delete or backup all you currently have in there at dependencies.md file and start all over to get Ansible to run successfully)
 
-- Note that jenkins will be running the ansible commands. Before now, it is ansible that ssh into the target machines but now it is the jenkins that will do that, so you ned to give jenkins the private key to enable it to connet to the target machines. Create an ssh credentials for jenkins to use to ssh into the target machines. Go to **Dashboard - Manage Jenkins - Credentials - Global credentials (unrestricted) - Add credentials**. Choose ssh username with private keys, ID = private-keys(any name), Description = jenkins ansible connection(any name), username = ec2-user(the username of the machine where jenkins is installed), copy the private key
+- Note that jenkins will be running the ansible commands. Before now, it is ansible that ssh into the target machines but now it is the jenkins that will do that, so you ned to give jenkins the private key to enable it to connet to the target machines. Create an ssh credentials for jenkins to use to ssh into the target machines. Go to **Dashboard - Manage Jenkins - Credentials - Global credentials (unrestricted) - Add credentials**. Choose ssh username with private keys, ID = private-key(any name), Description = jenkins ansible connection(any name), username = ec2-user(the username of the machine where jenkins is installed), copy the private key
 
 - Configure ansible in jenkins. Go to Dashboard - Manage Jenkins - Tools. Locate ansible, choose any name(ansible), path to ansible = /usr/bin/ Save the page.
 
@@ -530,21 +533,22 @@ Therefore our playbook should contain as below:
 - name: nginx assignment
   ansible.builtin.import_playbook: ../static-assignments/nginx.yml
 ```
+
 where nginx assignment should point to the nginx-proxy role and the database should create for now only the tooling database and webaccess user:
 ```yaml
 # Databases.
 mysql_databases:
-   - name: tooling
-     collation: utf8_general_ci
-     encoding: utf8
-     replicate: 1
+  - name: tooling
+    collation: utf8_general_ci
+    encoding: utf8
+    replicate: 1
 
 # Users.
 mysql_users: 
-   - name: webaccess
-     host: 0.0.0.0
-     password: secret
-     priv: '*.*:ALL,GRANT'
+  - name: webaccess
+    host: 0.0.0.0
+    password: secret
+    priv: '*.*:ALL,GRANT'
 ```
 
 The jenkinsfile should look like this

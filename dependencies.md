@@ -1,4 +1,5 @@
 # For using Redhat for your Jenkins and Ansible server
+
 ## Dependences to be installed
 ====================================
 ```
@@ -6,9 +7,9 @@ sudo yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.
 sudo yum install -y dnf-utils http://rpms.remirepo.net/enterprise/remi-release-8.rpm
 sudo dnf install -y ansible-core
 sudo yum install python3 python3-pip wget unzip git -y
-python3 -m pip install --upgrade setuptools
-python3 -m pip install --upgrade pip
-python3 -m pip install PyMySQL
+sudo python3 -m pip install --upgrade setuptools
+sudo python3 -m pip install --upgrade pip
+sudo python3 -m pip install PyMySQL
 python3 -m pip install mysql-connector-python
 python3 -m pip install psycopg2-binary
 ansible-galaxy collection install community.postgresql
@@ -19,16 +20,16 @@ ansible-galaxy collection install community.mysql
 sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
 sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
 
-sudo dnf install java-11-openjdk-devel
+sudo dnf install java-11-openjdk-devel -y
 
 java -version
 which javac
 
-
-# open the bash profile on the jenkins server
+Open the bash profile on the jenkins server
 vi .bash_profile 
 
-# paste the below in the bash profile
+Paste the below in the bash profile
+
 PATH=$PATH:$HOME/bin
 
 # export PATH
@@ -36,7 +37,8 @@ export JAVA_HOME=$(dirname $(dirname $(readlink $(readlink $(which javac)))))
 export PATH=$PATH:$JAVA_HOME/bin
 export CLASSPATH=.:$JAVA_HOME/jre/lib:$JAVA_HOME/lib:$JAVA_HOME/lib/tools.jar
 
-# reload the bash profile
+Reload the bash profile
+
 source ~/.bash_profile
 echo $JAVA_HOME
 
