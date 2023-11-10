@@ -5,13 +5,14 @@
 ```
 sudo yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
 sudo yum install -y dnf-utils http://rpms.remirepo.net/enterprise/remi-release-8.rpm
-sudo dnf install -y ansible-core
+sudo yum install -y ansible-2.9.25
 sudo yum install python3 python3-pip wget unzip git -y
 sudo python3 -m pip install --upgrade setuptools
 sudo python3 -m pip install --upgrade pip
 sudo python3 -m pip install PyMySQL
 python3 -m pip install mysql-connector-python
-python3 -m pip install psycopg2-binary
+#python3 -m pip install psycopg2-binary
+python3 -m pip install psycopg2==2.7.5 --ignore-installed
 ansible-galaxy collection install community.postgresql
 ansible-galaxy collection install community.mysql
 ```
@@ -105,11 +106,23 @@ sudo systemctl status jenkins
     }
 }
 ```
+#### Install php
+
+```
+sudo yum module reset php -y
+sudo yum module enable php:remi-7.4 -y
+sudo yum install -y php php-common php-mbstring php-opcache php-intl php-xml php-gd php-curl php-mysqlnd php-fpm php-json
+sudo systemctl start php-fpm
+sudo systemctl enable php-fpm
+```
+
 #### Install composer
-=====================================
-- curl -sS https://getcomposer.org/installer | php 
-- sudo mv composer.phar /usr/bin/composer
-- composer --version
+
+```
+curl -sS https://getcomposer.org/installer | php 
+sudo mv composer.phar /usr/bin/composer
+composer --version
+```
 
 #### Install phpunit, phploc
 =====================================
@@ -128,7 +141,7 @@ sudo yum install mysql -y
 
 Learn how to install Jenkins [here](https://www.jenkins.io/doc/book/installing/)
 
-Learn how to installk artifactory [here](https://jfrog.com/open-source/)
+Learn how to install artifactory [here](https://jfrog.com/open-source/)
 
 
 # For using Ubuntu 20.04 as your Jenkins and Ansible server
