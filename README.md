@@ -248,8 +248,6 @@ Watch a short description here https://youtu.be/upJS4R6SbgM Focus more on the fi
 
 In previous projects, you have been launching Ansible commands manually from a CLI. Now, with Jenkins, we will start running Ansible from Jenkins UI.
 
-# Please use Ubuntu 20.04 for this project because redhat 9 will have only php 8.0 instaed of php 7.4 that will conflict with the dependencies for php-todo configuration.  
-
 To do this,
 
 1. Spin up your jenkins-ansible server (REDHAT - RHEL-8.6.0_HVM-20220503-x86_64-2-Hourly2-GP2)
@@ -419,13 +417,12 @@ A QUICK TASK FOR YOU!
 
 4. Create a new branch **feature/jenkinspipeline-stages2**, add more stages into the Jenkins file to simulate below phases.
 
-   1. Initial cleanup (deletes the directory)
-   2. Package 
-   3. Deploy 
-   4. Clean up (cleans up the directory)
+  1. Initial cleanup (deletes the directory)
+  2. Package 
+  3. Deploy 
+  4. Clean up (cleans up the directory)
 
 Paste the code snippet below in to jenkinsfile and push the new changes to GitHub
-
 
 ```yaml
 pipeline {
@@ -481,7 +478,6 @@ pipeline {
 }
 ```
 
-
 5. Verify in Blue Ocean that all the stages are working, then merge your feature branch to the main branch
 
 ![second branch pipelin](./images/second-branch-pipeline.PNG)
@@ -510,7 +506,7 @@ ansible-galaxy collection install community.mysql
 
 3. Creating Jenkinsfile from scratch. (Delete or backup all you currently have in there at dependencies.md file and start all over to get Ansible to run successfully)
 
-- Note that jenkins will be running the ansible commands. Before now, it is ansible that ssh into the target machines but now it is the jenkins that will do that, so you ned to give jenkins the private key to enable it to connet to the target machines. Create an ssh credentials for jenkins to use to ssh into the target machines. Go to **Dashboard - Manage Jenkins - Credentials - Global credentials (unrestricted) - Add credentials**. Choose ssh username with private keys, ID = private-key(any name), Description = jenkins ansible connection(any name), username = ec2-user(the username of the machine where jenkins is installed), copy the private key
+- Note that jenkins will be running the ansible commands. Before now, it is ansible that ssh into the target machines but now it is the jenkins that will do that, so you need to give jenkins the private key to enable it to connect to the target machines. Create an ssh credentials for jenkins to use to ssh into the target machines. Go to **Dashboard - Manage Jenkins - Credentials - Global credentials (unrestricted) - Add credentials**. Choose ssh username with private keys, ID = private-key(any name), Description = jenkins ansible connection(any name), username = ec2-user(the username of the machine where jenkins is installed), copy the private key
 
 - Configure ansible in jenkins. Go to Dashboard - Manage Jenkins - Tools. Locate ansible, choose any name(ansible), path to ansible = /usr/bin/ Save the page.
 
@@ -831,7 +827,8 @@ artifactory
 - hosts: artifactory
 - name: artifactory assignment
   import_playbook: ../static-assignments/artifactory.yml
-  ```
+```
+
 Add, commit and push your changes to the github feature/jenkinspipeline-stages2. Create a pull request and merge to main. Go to your terminal on your jenkins server and pull down the latest changes. Make sure that the jenkins file is pointing to main branch.
 
 Go to Jenkins and build with **ci.yml** parameter
@@ -844,10 +841,10 @@ Go to Jenkins and build with **ci.yml** parameter
 
 - Connect to the artifactory web page, the initial username and password is admin and password respectively. Update the password = Onyeka12345. Create a generic repository with Repository key = PBL
 
-4. In Jenkins UI configure Artifactory. Go to **manage jenkins**, **system**
-. Then Configure the server ID = artifactory-server, URL(http://artifactory-ip:8081/) and Credentials, and run Test Connection. 
-  - username: admin
-  - password: <artifactory-password>
+4. In Jenkins UI configure Artifactory. Go to **manage jenkins**, **system**.
+Then Configure the server ID = artifactory-server, URL(http://artifactory-ip:8081/) and Credentials, and run Test Connection. 
+ - username: admin
+ - password: <artifactory-password>
 
 ![configuring artifactory on jenkins](./images/jenkins-artifactory-configure.PNG)
 
@@ -864,6 +861,7 @@ Create database homestead;
 CREATE USER 'homestead'@'%' IDENTIFIED BY 'sePret^i';
 GRANT ALL PRIVILEGES ON * . * TO 'homestead'@'%';
 ```
+
 Use Jenkins to run a playbook that will do the above database update
 
 - Update the roles/mysql/defaults/main.yml with the command below
@@ -1403,14 +1401,14 @@ sudo apt-get install wget unzip -y
 Install **OpenJDK** and **Java Runtime Environment (JRE) 11**
 
 ```
- sudo apt-get install openjdk-11-jdk -y
- sudo apt-get install openjdk-11-jre -y
+sudo apt-get install openjdk-11-jdk -y
+sudo apt-get install openjdk-11-jre -y
 ```
 
 Set default JDK – To set default JDK or switch to OpenJDK enter below command:
 
 ```
- sudo update-alternatives --config java
+sudo update-alternatives --config java
 ```
 
 If you have multiple versions of Java installed, you should see a list like below:
@@ -1761,7 +1759,7 @@ sudo systemctl status sonar
 ```
 - Add, commit and push your changes
 
-- Run the **ansible-config-m** jenkinsfile against the CI environment
+- Run the **ansible-config-mgt** jenkinsfile against the CI environment
 
 ![ couldn't resolve module/action 'community.postgresql.postgresql_db'](./images/sonarqube-blocker.PNG)
 
@@ -1771,10 +1769,10 @@ sudo systemctl status sonar
 ```
 roles_path = /home/ec2-user/ansible-config-mgt-redo/roles
 ```
+
 - On the ansible-config-proj-14 terminal run the command below
 ```
 export ANSIBLE_CONFIG=/home/ec2-user/ansible-config-mgt-redo/deploy/ansible.cfg
-
 ```
 where/home/ec2-user/ansible-config-proj-14/deploy/ansible.cfg is the path for "ansible.cfg"
 
@@ -1784,6 +1782,7 @@ where/home/ec2-user/ansible-config-proj-14/deploy/ansible.cfg is the path for "a
 ```
 ansible-playbook -i inventory/ci.yml playbooks/site.yml
 ```
+
 ![successfull installation of sonarqube](./images/sonarqube-installation.PNG)
 
 ### Access SonarQube
