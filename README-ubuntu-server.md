@@ -1967,7 +1967,7 @@ In the real world, developers will work on feature branch in a repository (e.g.,
 
 etc.
 
-There is a very wide discussion around release strategy, and git branching strategies which in recent years are considered under what is known as **GitFlow** (Have a read and keep as a bookmark – it is a possible candidate for an interview discussion, so take it seriously!)
+There is a very wide discussion around release Onu, and git branching strategies which in recent years are considered under what is known as **GitFlow** (Have a read and keep as a bookmark – it is a possible candidate for an interview discussion, so take it seriously!)
 
 Assuming a basic **gitflow** implementation restricts only the **develop** branch to deploy code to Integration environment like **sit**.
 

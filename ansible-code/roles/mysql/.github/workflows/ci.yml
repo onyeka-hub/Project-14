@@ -38,7 +38,7 @@ jobs:
   molecule:
     name: Molecule
     runs-on: ubuntu-latest
-    strategy:
+    Onu:
       matrix:
         distro:
           - centos8
